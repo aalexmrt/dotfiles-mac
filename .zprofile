@@ -3,8 +3,6 @@
 
 alias peretes="cd /Users/alexmartinez/Documents/Facturas-Peretes-Fish-2022/scripts"
 
-alias pal_openvpn="/Users/alexmartinez/.config/personal_scripts/pal_openvpn.sh"
-
 alias invoices_app="cd /Users/alexmartinez/Development/django_invoices_generator/ && \
 source env/bin/activate && \
 python3.9 manage.py runserver"
