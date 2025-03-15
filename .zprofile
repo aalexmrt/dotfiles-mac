@@ -30,9 +30,9 @@ nvm() {
 alias run-invoices='echo "🚀 Starting Django invoices app..." && cd /Users/alexmartinez/Documents/django-invoices-generator && poetry run python manage.py runserver'
 
 # Docker compose shortcuts
-alias dc='echo "🐳 Running docker compose command:" && docker compose'
-alias dcu='echo "🚀 Starting docker compose services..." && docker compose up'
-alias dcd='echo "🛑 Stopping docker compose services..." && docker compose down'
+alias dc='manage_orbstack && echo "🐳 Running docker compose command:" && docker compose'
+alias dcu='manage_orbstack && echo "🚀 Starting docker compose services..." && docker compose up'
+alias dcd='echo "🛑 Stopping docker compose services..." && docker compose down && stop_orbstack'
 
 # Docker cleanup - removes all containers, volumes, and prunes the system
 alias docker-clean='echo "🧹 Starting Docker cleanup..." && \
@@ -51,8 +51,8 @@ alias clean-modules='echo "🔍 Searching for node_modules directories..." && \
   find . -name "node_modules" -type d -prune -print -exec sh -c '\''echo "🗑️  Removing: {}" && rm -rf "{}"'\'' \; && \
   echo "✨ Finished cleaning node_modules directories"'
 
-# Reload shell configuration
-alias reload='echo "🔄 Reloading shell configuration..." && exec zsh'
+# Reload shell configuration - fixed version
+alias reload='echo "🔄 Reloading shell configuration..." && source ~/.zprofile && echo "✅ Shell configuration reloaded"'
 
 # PNPM shortcuts with logging
 alias dev='echo "🚀 Starting development server..." && pnpm dev'
@@ -75,6 +75,7 @@ alias_help() {
   echo "  format     ✨ Format code using pnpm"
   
   echo "\n🐳 Docker Commands:"
+  echo "  manage_orbstack 🚀 Manage OrbStack"
   echo "  dc         🐳 Run docker compose command"
   echo "  dcu        🚀 Start docker compose services"
   echo "  dcd        🛑 Stop docker compose services"
@@ -85,6 +86,7 @@ alias_help() {
   
   echo "\n🔄 System Commands:"
   echo "  reload     🔄 Reload shell configuration"
+  echo "  crontasks  📋 List all your scheduled cron tasks"
   
   echo "\n🚀 Application Shortcuts:"
   echo "  run-invoices 📊 Start Django invoices application"
@@ -102,11 +104,6 @@ alias help="alias_help"
 echo "✅ All aliases and configurations loaded successfully"
 echo "💡 Type 'help' to see all available commands"
 
-#TODO: Fix problem with reload alias not working
-##
-# Your previous /Users/alexmartinez/.zprofile file was backed up as /Users/alexmartinez/.zprofile.macports-saved_2025-03-15_at_00:47:56
-##
-
 # MacPorts Installer addition on 2025-03-15_at_00:47:56: adding an appropriate PATH variable for use with MacPorts.
 export PATH="/opt/local/bin:/opt/local/sbin:$PATH"
 # Finished adapting your PATH environment variable for use with MacPorts.
@@ -118,6 +115,37 @@ if command -v fastfetch &> /dev/null; then
 else
     echo "⚠️  fastfetch is not installed. Install it with: sudo port install fastfetch"
 fi
+# Function to manage OrbStack
+manage_orbstack() {
+    # Check if OrbStack is running
+    if ! pgrep -q "OrbStack"; then
+        echo "🚀 Starting OrbStack in background..."
+        # Start OrbStack without showing the window
+        open -gj -a OrbStack
+        # Wait for OrbStack to fully start
+        sleep 5
+    fi
+}
 
+# Function to stop OrbStack if no containers are running
+stop_orbstack() {
+    if [ "$(docker ps -q 2>/dev/null)" = "" ]; then
+        if pgrep -q "OrbStack"; then
+            echo "🛑 No active containers, stopping OrbStack..."
+            pkill OrbStack
+            return 0
+        else
+            echo "ℹ️ OrbStack is not running"
+            return 1
+        fi
+    else
+        echo "⚠️ Active containers found, keeping OrbStack running"
+        return 1
+    fi
+}
 
+# Add OrbStack stop alias
+alias orbstack-stop='stop_orbstack'
 
+# Add crontab listing alias
+alias crontasks='echo "📋 Your scheduled cron tasks:" && crontab -l'
