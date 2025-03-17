@@ -19,19 +19,24 @@ nvm() {
     echo "🔄 Loading NVM..."
     unset -f nvm
     export NVM_DIR="$HOME/.nvm"
-    [ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"
-    [ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"
+    # Try MacPorts nvm first, then fall back to Homebrew if needed
+    if [ -s "/opt/local/share/nvm/init-nvm.sh" ]; then
+        source /opt/local/share/nvm/init-nvm.sh
+    elif [ -s "/opt/homebrew/opt/nvm/nvm.sh" ]; then
+        \. "/opt/homebrew/opt/nvm/nvm.sh"
+        \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"
+    fi
     echo "✅ NVM loaded"
     # Call nvm with the provided arguments
     nvm "$@"
 }
 
 # Django invoices app shortcut
-alias run-invoices='echo "🚀 Starting Django invoices app..." && cd /Users/alexmartinez/Documents/django-invoices-generator && poetry run python manage.py runserver'
+alias run-invoices='echo "🚀 Starting Django invoices app..." && cd /Users/alexmartinez/Documents/django-invoices-generator && export DYLD_LIBRARY_PATH=/opt/local/lib:$DYLD_LIBRARY_PATH && poetry run python manage.py runserver'
 
 # Docker compose shortcuts
-alias dc='manage_orbstack && echo "🐳 Running docker compose command:" && docker compose'
-alias dcu='manage_orbstack && echo "🚀 Starting docker compose services..." && docker compose up'
+alias dc='echo "Checking if OrbStack is running..." && manage_orbstack && echo "🐳 Running docker compose command:" && docker compose'
+alias dcu='echo "Checking if OrbStack is running..." && manage_orbstack && echo "🚀 Starting docker compose services..." && docker compose up'
 alias dcd='echo "🛑 Stopping docker compose services..." && docker compose down && stop_orbstack'
 
 # Docker cleanup - removes all containers, volumes, and prunes the system
